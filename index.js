@@ -172,7 +172,5 @@ function submitToHistory(event) {
 
   state.transferList = [];
 
-  whoSend.innerHTML = `<option selected>Kimden...</option>`;
-  whoReceive.innerHTML = `<option selected>Kime...</option>`;
   document.getElementById("amount-of-money").value = "";
 }
