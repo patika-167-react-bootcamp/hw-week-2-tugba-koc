@@ -50,6 +50,7 @@ function setState(arguments) {
 
 let outputArea = document.getElementById("output-area");
 
+// create user list element and append to output area (render)
 function renderUserList() {
   outputArea.innerHTML = "";
   state.userList.forEach(function (el) {
@@ -70,9 +71,11 @@ function renderUserList() {
   });
 }
 
+// user delete function
 function deleteUser(id) {
   let user = state.userList.filter((user) => user.id === id);
 
+  // send to history function to show delete operation
   sendToHistory(user, "delete");
 
   // delete user from list
@@ -81,14 +84,19 @@ function deleteUser(id) {
   // delete user from output area
   renderUserList(state.userList);
 
+  // delete user from transfer-send list
   renderTransferSend();
 }
 
+// USER LIST END
+
 // TRANSFER PART START
 
+// input areas for transfer 
 let whoSend = document.getElementById("who-send");
 let whoReceive = document.getElementById("who-receive");
 
+// transfer-send list function (render)
 function renderTransferSend() {
   whoSend.innerHTML = `<option selected>Kimden...</option>`;
   state.userList.forEach(function (element) {
@@ -99,19 +107,27 @@ function renderTransferSend() {
   });
 }
 
+// values for transfer equation
 let selectedSend = "";
 let selectedReceive = "";
 
+// when user select a user from transfer-send list
 whoSend.addEventListener("change", (event) => {
   selectedSend = whoSend.selectedOptions[0].value;
+
+  // if user select a user from transfer-send list, set default value to transfer-receive list
   whoReceive.innerHTML = `<option selected>Kime...</option>`;
+
+  // prevent showing same user in transfer-receive list
   renderTransferReceive(selectedSend);
 });
 
+// when user select a user from transfer-receive list
 whoReceive.addEventListener("change", (event) => {
   selectedReceive = whoReceive.selectedOptions[0].value;
 });
 
+// transfer-receive list function (render)
 function renderTransferReceive(selectedSend) {
   state.restUserList = state.userList.filter((el) => el.name != selectedSend);
   state.restUserList.forEach((el) => {
