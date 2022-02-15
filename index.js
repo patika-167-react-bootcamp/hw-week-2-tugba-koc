@@ -198,5 +198,5 @@ function submitToHistory(event) {
     renderUserList();
 
     document.getElementById("amount-of-money").value = "";
-  }
+  } 
 }
