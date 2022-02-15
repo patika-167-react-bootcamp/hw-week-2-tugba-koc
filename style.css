@@ -1,0 +1,86 @@
+.main {
+  position: relative;
+  height: 100vh;
+}
+
+.main::before {
+  content: "";
+  background: url("assets/img.jpg");
+  background-size: cover;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+  opacity: 0.75;
+  z-index: -9999;
+}
+
+.row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+* {
+  font-family: "DM Sans", sans-serif;
+}
+
+.btn:focus,
+.btn:active {
+  outline: none !important;
+  box-shadow: 0 0 0 0;
+}
+
+input {
+  font-weight: 800;
+  color: black;
+}
+
+.input-area {
+  display: flex;
+  flex-direction: column;
+}
+
+.left-frame {
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  width: 50px;
+  margin: 12px 0 0 auto !important;
+}
+
+tr {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.btn-danger {
+  color: #dc3545 !important;
+  border-color: #dc3545;
+  padding: 2px 8px !important;
+  margin: 5px 0 !important;
+  transition: all 0.3s;
+}
+
+.btn-danger:hover {
+  background-color: #dc3545 !important;
+  color: white !important;
+}
+
+/* TRANSFER */
+.form-floating > label {
+  padding: 1rem 1.6rem !important;
+}
+
+.row > .form-floating > label:nth-child(1) {
+  padding: 1rem 0.8rem !important;
+}
+
+/* HISTORY */
+
+li {
+  list-style: none;
+}
