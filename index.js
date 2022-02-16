@@ -20,8 +20,8 @@ function warning(type) {
 
 // add new user
 function submitHandler(event) {
-  // id defined as autoincrement
-  let id = 0;
+  
+  let id = (Math.random()*1000).toFixed(3)+1; // create id for new user
 
   event.preventDefault(); // prevent default behavior (refresh)
   let name = document.getElementById("name").value;
@@ -97,35 +97,43 @@ function renderTransferSend() { // transfer-send list function (render)
     let newOption = document.createElement("option");
     newOption.setAttribute("value", element.name);
     newOption.innerText = element.name;
+    newOption.setAttribute("id", element.id);
     whoSend.appendChild(newOption);
   });
 }
 
 // values for transfer equation
-let selectedSend = "";
-let selectedReceive = "";
+let selectedSend = {};
+let selectedReceive = {};
 
 whoSend.addEventListener("change", (event) => { // when user select a user from transfer-send list
-  selectedSend = whoSend.selectedOptions[0].value;
+  selectedSend = {
+    name : whoSend.selectedOptions[0].value,
+    id : whoSend.selectedOptions[0].id, 
+  }
 
   // if user select a user from transfer-send list, set default value to transfer-receive list
   whoReceive.innerHTML = `<option selected>Kime...</option>`;
 
   // create rest options for transfer-receive list
-  let restUserList = state.userList.filter((el) => el.name != selectedSend);
+  let restUserList = state.userList.filter((el) => el.name != selectedSend.name);
 
   // prevent showing same user in transfer-receive list
   renderTransferReceive(restUserList);
 });
 
 whoReceive.addEventListener("change", (event) => { // when user select a user from transfer-receive list
-  selectedReceive = whoReceive.selectedOptions[0].value;
+  selectedReceive = {
+    name: whoReceive.selectedOptions[0].value,
+    id: whoReceive.selectedOptions[0].id
+  }
 });
 
 function renderTransferReceive(restUserList) { // transfer-receive list function (render)
   restUserList.forEach((el) => {
     let newOption = document.createElement("option");
     newOption.setAttribute("value", el.name);
+    newOption.setAttribute("id", el.id);
     newOption.innerText = el.name;
     whoReceive.appendChild(newOption);
   });
@@ -135,7 +143,7 @@ let transferList = document.getElementById("transfer-list");
 
 function renderHistoryList(user, type) {
   let userLi = document.createElement("li");
-  
+  let unDoButton = document.createElement("button");
   if (type == "add") { // if user added, send to history list
     userLi.classList.add("text-end", "text-secondary");
     userLi.innerHTML = `${user[user.length - 1].name} kullanıcısı ${
@@ -143,7 +151,13 @@ function renderHistoryList(user, type) {
     } TL bakiyesi ile kullanıcı listemize eklendi. ---`;
   } else if (type == "transfer") { // if money transfered, send to history list
     userLi.classList.add("text-success");
-    userLi.innerText = `${user.selectedSend} kullanıcısından, ${user.selectedReceive} kullanıcısına ${user.amount} TL aktarıldı.`;
+    console.log(user);
+    
+    unDoButton.setAttribute("class", "btn btn-danger");
+    unDoButton.setAttribute("onclick", `unDoTransfer()`);
+    unDoButton.innerText = "Geri Al";
+    userLi.innerHTML = `${user.selectedSend.name} kullanıcısından, ${user.selectedReceive.name} kullanıcısına ${user.amount} TL aktarıldı.`;
+    userLi.appendChild(unDoButton);
   } else { // if user deleted, send to history list
     userLi.classList.add("text-end", "text-danger");
     userLi.innerHTML = `${user[0].name} kullanıcısı silindi. ---`;
@@ -186,7 +200,7 @@ function submitToHistory(event) {
       if (element.name == selectedSend) {
         element.money = element.money - parseInt(amount);
       }
-      if (element.name == selectedReceive) {
+      if (element.name == selectedReceive.name) {
         element.money = Number(element.money) + Number(amount);
       }
     });
