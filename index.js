@@ -29,7 +29,7 @@ function submitHandler(event) {
 
   if (name && money) { // if input is not empty, add new user to list with id
     id++;
-    setState("userList", [{ name, money, id }]);
+    addUser("userList", { name, money, id });
     renderUserList();
     renderTransferSend();
     renderHistoryList(state.userList, "add");
@@ -40,12 +40,14 @@ function submitHandler(event) {
   document.getElementById("money").value = "";
 }
 
+function addUser(type,value){
+  setState("userList", [...state.userList,value]);
+  console.log(state.userList);
+  
+}
+
 function setState(type, arguments) {
-  if (type == "userList") {
-    state.userList.push(...arguments);
-  } else if (type == "transfer") {
-    state.transfer = arguments;
-  }
+  state[type] = arguments;
 }
 
 function renderUserList() { // create user list element and append to output area (render)
@@ -150,11 +152,9 @@ function renderHistoryList(user, type) {
       user[user.length - 1].money
     } TL bakiyesi ile kullanıcı listemize eklendi. ---`;
   } else if (type == "transfer") { // if money transfered, send to history list
-    userLi.classList.add("text-success");
-    console.log(user);
-    
+    userLi.classList.add("text-success");    
     unDoButton.setAttribute("class", "btn btn-danger");
-    unDoButton.setAttribute("onclick", `unDoTransfer()`);
+    unDoButton.setAttribute("onclick", `unDoTransfer(${selectedSend.id,selectedReceive.id})`);
     unDoButton.innerText = "Geri Al";
     userLi.innerHTML = `${user.selectedSend.name} kullanıcısından, ${user.selectedReceive.name} kullanıcısına ${user.amount} TL aktarıldı.`;
     userLi.appendChild(unDoButton);
@@ -185,6 +185,8 @@ function submitToHistory(event) {
   } else {
     if (selectedSend && selectedReceive && amount) {
       setState("transfer", { selectedSend, selectedReceive, amount });
+      console.log(state.transfer);
+      
     } 
     // if user doesn't select a field, show warning
     else {
@@ -213,4 +215,28 @@ function submitToHistory(event) {
 
     document.getElementById("amount-of-money").value = ""; 
   } 
+}
+
+function unDoTransfer(sendId, receiveId) {
+  // find user from user list  
+  let userOne = state.userList.filter((user) => user.id == sendId);
+  let userTwo = state.userList.filter((user) => user.id == receiveId);
+
+  console.log(userOne, userTwo);
+  
+  // send to history function
+  // renderHistoryList(user, "delete");
+
+  // user list update
+  // state.userList.forEach(function (element) {
+  //   if (element.name == user.selectedSend.name) {
+  //     element.money = element.money + parseInt(user[0].amount);
+  //   }
+  //   if (element.name == user.selectedReceive.name) {
+  //     element.money = element.money - parseInt(user[0].amount);
+  //   }
+  // });
+
+  // render user list according to updated values
+  renderUserList();
 }
