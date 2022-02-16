@@ -2,6 +2,7 @@ const state = {
   userList: [],
   transfer: {},
   isActive: true,
+  history: [],
 };
 
 // WARNING START
@@ -39,7 +40,8 @@ function submitHandler(event) {
     addUser("userList", { name, money, id });
     renderUserList();
     renderTransferSend();
-    renderHistoryList(state.userList, "add");
+    setState("history", [...state.history, { name, money, id, type: "add" }]);
+    renderHistoryList();
   } else {
     // if input is empty, show warning
     warningArea.innerHTML = warning("warning");
@@ -50,7 +52,6 @@ function submitHandler(event) {
 
 function addUser(type, value) {
   setState("userList", [...state.userList, value]);
-  console.log(state.userList);
 }
 
 function setState(type, arguments) {
@@ -84,20 +85,14 @@ function renderUserList() {
 function deleteUser(id) {
   // user delete function
   let user = state.userList.filter((user) => user.id == id);
-
-  renderHistoryList(user, "delete"); // send to history function to show delete operation
+  setState("history", [...state.history, { user, type: "delete" }]);
+  renderHistoryList(); // send to history function to show delete operation
 
   state.userList = state.userList.filter((user) => user.id != id); // delete user from list
 
   renderUserList(state.userList); // delete user from output area
 
   renderTransferSend(); // delete user from transfer-send list
-}
-
-function deleteHistory(id) {
-  // history delete function
-  let history = state.history.filter((history) => history.id == id);
-
 }
 
 // USER LIST END
@@ -164,50 +159,51 @@ function renderTransferReceive(restUserList) {
 
 let transferList = document.getElementById("transfer-list");
 
-function renderHistoryList(user = "", type = "") {
+function renderHistoryList() {
   let userLi = document.createElement("li");
   let unDoButton = document.createElement("span");
-  if (type == "add") {
-    // if user added, send to history list
-    userLi.classList.add("text-end", "text-secondary");
-    userLi.innerHTML = `${user[user.length - 1].name} kullanıcısı ${
-      user[user.length - 1].money
-    } TL bakiyesi ile kullanıcı listemize eklendi. ---`;
-  } else if (type == "transfer") {
-    let idHistoryItem = (Math.random() * 10000).toFixed(3) + 1;
-    userLi.setAttribute("id", idHistoryItem);
-    // if money transfered, send to history list
-    userLi.classList.add(
-      "text-success",
-      "d-flex",
-      "align-items-center",
-      "money-transfer-element"
-    );
-    userLi.innerHTML = `${user.selectedSend.name} kullanıcısından, ${user.selectedReceive.name} kullanıcısına ${user.amount} TL aktarıldı.`;
-    unDoButton.style.cursor = "pointer";
-    unDoButton.setAttribute("id", idHistoryItem);
-    unDoButton.setAttribute("class", "text-secondary fs-2 me-3");
-    unDoButton.setAttribute(
-      "onclick",
-      `unDoTransfer(${user.selectedSend.id},${user.selectedReceive.id},${user.amount})`
-    );
-    unDoButton.innerHTML = `&#8630`;
-    userLi.prepend(unDoButton);
-  } else if (type == "unDo") {
 
-    let moneyTransferElement = [
-      document.getElementsByClassName("money-transfer-element"),
-    ];
+  state.history.forEach(function (el) {
+    if (el.type == "add") {
+      // if user added, send to history list
+      userLi.classList.add("text-end", "text-secondary");
+      userLi.innerHTML = `${el.name} kullanıcısı ${el.money} TL bakiyesi ile kullanıcı listemize eklendi. ---`;
+    } else if (el.type == "delete") {
+      // if user deleted, send to history list
+      userLi.classList.add("text-end", "text-danger");
+      userLi.innerHTML = `${el.user[0].name} kullanıcısı silindi. ---`;
+    } else if (el.type == "transfer") {
+      let idHistoryItem = (Math.random() * 10000).toFixed(3) + 1;
+      userLi.setAttribute("id", idHistoryItem);
+      // if money transfered, send to history list
+      userLi.classList.add(
+        "text-success",
+        "d-flex",
+        "align-items-center",
+        "money-transfer-element"
+      );
+      userLi.innerHTML = `${selectedSend.name} kullanıcısından, ${selectedReceive.name} kullanıcısına ${el.amount} TL aktarıldı.`;
+      unDoButton.style.cursor = "pointer";
+      unDoButton.setAttribute("id", idHistoryItem);
+      unDoButton.setAttribute("class", "text-secondary fs-2 me-3");
+      unDoButton.setAttribute(
+        "onclick",
+        `unDoTransfer(${selectedSend.id},${selectedReceive.id},${el.amount})`
+      );
+      unDoButton.innerHTML = `&#8630`;
+      userLi.prepend(unDoButton);
+    } else if (el.type == "unDo") {
+      let moneyTransferElement = [
+        document.getElementsByClassName("money-transfer-element"),
+      ];
 
-    deleteHistory(idHistoryItem);
+      // deleteHistory(idHistoryItem);
 
-    // transferList.remove(transferList.children[i]);
-    userLi.classList.add("text-warning");
-    userLi.innerHTML = `--- Havale İşlemi İptal Edildi.`;
-  } else { // if user deleted, send to history list
-    userLi.classList.add("text-end", "text-danger");
-    userLi.innerHTML = `${user[0].name} kullanıcısı silindi. ---`;
-  }
+      // transferList.remove(transferList.children[i]);
+      userLi.classList.add("text-warning");
+      userLi.innerHTML = `--- Havale İşlemi İptal Edildi.`;
+    }
+  });
   // append to history list
   let divElement = document.createElement("div");
   divElement.setAttribute("class", "py-3 bg-light");
@@ -228,7 +224,10 @@ function submitToHistory(event) {
     warningArea.innerHTML = warning("warning-amount");
   } else {
     if (selectedSend && selectedReceive && amount) {
-      setState("transfer", { selectedSend, selectedReceive, amount });
+      setState("history", [
+        ...state.history,
+        { selectedSend, selectedReceive, amount, type: "transfer" },
+      ]);
     } else {
       // if user doesn't select a field, show warning
       warningArea.innerHTML = warning("warning-transfer-empty");
@@ -262,17 +261,13 @@ function unDoTransfer(sendId, receiveId, amount) {
   let userReceive = state.userList.filter((user) => user.id == receiveId);
 
   setState("isActive", false); // set isActive to false
-  console.log(state.isActive);
 
-  renderHistoryList("", "unDo"); // send to history list
-
-  // renderHistoryList();
+  setState("history", [...state.history, { type: "unDo" }]);
+  renderHistoryList(); // send to history list
 
   // user list update
   state.userList.forEach(function (element) {
     if (element.name == userSend[0].name) {
-      console.log(element.money, amount);
-
       element.money = Number(element.money) + Number(amount);
     }
     if (element.name == userReceive[0].name) {
