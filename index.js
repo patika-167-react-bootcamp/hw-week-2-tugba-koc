@@ -166,20 +166,23 @@ function renderHistoryList() {
   state.history.forEach(function (el) {
     if (el.type == "add") {
       // if user added, send to history list
-      userLi.classList.add("text-end", "text-secondary");
+      userLi.classList.remove("text-danger","text-warning","justify-content-start");
+      userLi.classList.add("d-flex","justify-content-end", "text-secondary");
       userLi.innerHTML = `${el.name} kullanıcısı ${el.money} TL bakiyesi ile kullanıcı listemize eklendi. ---`;
     } else if (el.type == "delete") {
       // if user deleted, send to history list
-      userLi.classList.add("text-end", "text-danger");
+      userLi.classList.add("d-flex","justify-content-end", "text-danger");
       userLi.innerHTML = `${el.user[0].name} kullanıcısı silindi. ---`;
     } else if (el.type == "transfer") {
       let idHistoryItem = (Math.random() * 10000).toFixed(3) + 1;
       userLi.setAttribute("id", idHistoryItem);
       // if money transfered, send to history list
+      userLi.classList.remove("justify-content-end");
       userLi.classList.add(
         "text-success",
         "d-flex",
         "align-items-center",
+        "justify-content-start",
         "money-transfer-element"
       );
       userLi.innerHTML = `${selectedSend.name} kullanıcısından, ${selectedReceive.name} kullanıcısına ${el.amount} TL aktarıldı.`;
@@ -193,14 +196,14 @@ function renderHistoryList() {
       unDoButton.innerHTML = `&#8630`;
       userLi.prepend(unDoButton);
     } else if (el.type == "unDo") {
-      let moneyTransferElement = [
-        document.getElementsByClassName("money-transfer-element"),
-      ];
-
-      // deleteHistory(idHistoryItem);
-
-      // transferList.remove(transferList.children[i]);
+      // let moneyTransferElement = [
+      //   document.getElementsByClassName("money-transfer-element"),
+      // ];
+      console.log(el,"unDo");
+      
+      userLi.classList.remove("text-secondary","justify-content-end");
       userLi.classList.add("text-warning");
+      userLi.innerHTML = "";
       userLi.innerHTML = `--- Havale İşlemi İptal Edildi.`;
     }
   });
