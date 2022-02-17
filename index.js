@@ -162,22 +162,25 @@ let transferList = document.getElementById("transfer-list");
 function renderHistoryList() {
   let userLi = document.createElement("li");
   let unDoButton = document.createElement("span");
-
+  let divElement = document.createElement("div");
+  let idHistoryItem = (Math.random() * 10000).toFixed(3) + 1;
   state.history.forEach(function (el) {
     if (el.type == "add") {
       // if user added, send to history list
-      userLi.classList.remove("text-danger","text-warning","justify-content-start");
-      userLi.classList.add("d-flex","justify-content-end", "text-secondary");
+      userLi.classList.remove(
+        "text-danger",
+        "text-warning",
+        "justify-content-start"
+      );
+      userLi.classList.add("d-flex", "justify-content-end", "text-secondary");
       userLi.innerHTML = `${el.name} kullanıcısı ${el.money} TL bakiyesi ile kullanıcı listemize eklendi. ---`;
     } else if (el.type == "delete") {
       // if user deleted, send to history list
-      userLi.classList.add("d-flex","justify-content-end", "text-danger");
+      userLi.classList.add("d-flex", "justify-content-end", "text-danger");
       userLi.innerHTML = `${el.user[0].name} kullanıcısı silindi. ---`;
     } else if (el.type == "transfer") {
-      let idHistoryItem = (Math.random() * 10000).toFixed(3) + 1;
-      userLi.setAttribute("id", idHistoryItem);
       // if money transfered, send to history list
-      userLi.classList.remove("justify-content-end");
+      userLi.classList.remove("justify-content-end","text-warning");
       userLi.classList.add(
         "text-success",
         "d-flex",
@@ -185,31 +188,27 @@ function renderHistoryList() {
         "justify-content-start",
         "money-transfer-element"
       );
-      userLi.innerHTML = `${selectedSend.name} kullanıcısından, ${selectedReceive.name} kullanıcısına ${el.amount} TL aktarıldı.`;
-      unDoButton.style.cursor = "pointer";
+      userLi.innerHTML = `${el.sender.name} kullanıcısından, ${el.receiver.name} kullanıcısına ${el.amount} TL aktarıldı.`;
+      unDoButton.style.cursor = "pointer";      
       unDoButton.setAttribute("id", idHistoryItem);
       unDoButton.setAttribute("class", "text-secondary fs-2 me-3");
       unDoButton.setAttribute(
         "onclick",
-        `unDoTransfer(${selectedSend.id},${selectedReceive.id},${el.amount})`
+        `unDoTransfer(${el.sender.id},${el.receiver.id},${el.amount},${el.id})`
       );
       unDoButton.innerHTML = `&#8630`;
       userLi.prepend(unDoButton);
+      divElement.setAttribute("id", el.id);
     } else if (el.type == "unDo") {
-      // let moneyTransferElement = [
-      //   document.getElementsByClassName("money-transfer-element"),
-      // ];
-      console.log(el,"unDo");
       
-      userLi.classList.remove("text-secondary","justify-content-end");
+      userLi.classList.remove("text-secondary", "justify-content-end");
       userLi.classList.add("text-warning");
-      userLi.innerHTML = "";
       userLi.innerHTML = `--- Havale İşlemi İptal Edildi.`;
     }
   });
   // append to history list
-  let divElement = document.createElement("div");
-  divElement.setAttribute("class", "py-3 bg-light");
+
+  divElement.setAttribute("class", "py-3 bg-light transferDiv");
   divElement.appendChild(userLi);
 
   transferList.prepend(divElement);
@@ -227,9 +226,10 @@ function submitToHistory(event) {
     warningArea.innerHTML = warning("warning-amount");
   } else {
     if (selectedSend && selectedReceive && amount) {
+      let idHistoryItem = (Math.random() * 10000).toFixed(3) + 1;
       setState("history", [
         ...state.history,
-        { selectedSend, selectedReceive, amount, type: "transfer" },
+        { sender:selectedSend, receiver:selectedReceive, amount:amount, type:"transfer", id:idHistoryItem }
       ]);
     } else {
       // if user doesn't select a field, show warning
@@ -258,7 +258,19 @@ function submitToHistory(event) {
   }
 }
 
-function unDoTransfer(sendId, receiveId, amount) {
+function unDoTransfer(sendId, receiveId, amount, id) {
+  // fin divs
+ let divs = document.getElementsByClassName("transferDiv");
+
+  // find the div element and delete them
+  for (let i = 0; i < divs.length; i++) {
+    if (divs[i].id == id) {
+      divs[i].remove();
+    }
+  }
+
+  setState("history", state.history.filter((el) => el.id != id));
+
   // find user from user list
   let userSend = state.userList.filter((user) => user.id == sendId);
   let userReceive = state.userList.filter((user) => user.id == receiveId);
@@ -280,3 +292,14 @@ function unDoTransfer(sendId, receiveId, amount) {
 
   renderUserList(); // render user list according to updated values
 }
+
+let historySearch = document.getElementById("history-search");
+
+historySearch.addEventListener("keyup", function (event) {
+  // if user points the search field
+  let searchValue = event.target.value;
+  // prevent changing of state.history
+  let copyHistoryArray = [...state.history];
+  copyHistoryArray.filter(el=> el.name==searchValue);
+}
+);
